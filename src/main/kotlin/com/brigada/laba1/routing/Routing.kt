@@ -3,6 +3,7 @@ package com.brigada.laba1.routing
 import com.brigada.laba1.domain.DataController
 import com.brigada.laba1.routing.models.AddingFIlm
 import com.brigada.laba1.routing.models.FilmResponse
+import com.brigada.laba1.routing.models.toResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -23,6 +24,7 @@ fun Application.configureRouting() {
             call.pathParameters["id"]
                 ?.toLongOrNull()
                 ?.let { controller.getById(it) }
+                ?.toResponse()
                 ?.let { call.respond(HttpStatusCode.OK, it) }
                 ?: call.respond(HttpStatusCode.BadRequest)
         }

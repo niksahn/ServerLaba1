@@ -23,6 +23,8 @@ repositories {
 }
 
 dependencies {
+    implementation("io.ktor:ktor-server-swagger")
+
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
@@ -33,6 +35,5 @@ dependencies {
     implementation ("io.insert-koin:koin-ktor:$koin_version")
     implementation("io.ktor:ktor-server-status-pages")
     implementation ("io.insert-koin:koin-logger-slf4j:$koin_version")
-    implementation("io.github.smiley4:ktor-swagger-ui:3.3.1")
 
 }
