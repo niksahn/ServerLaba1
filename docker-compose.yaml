@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      MONGO_URL: "mongodb://localhost:27017"
+    networks:
+        - app-network
+    depends_on:
+      - mongodb  # Это гарантирует, что MongoDB запускается перед приложением
+
+  mongodb:
+    image: 983d82181e761c763f08565874b3e3b02e1626f7cbf942e98852bad7e5721faa
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+volumes:
+  mongo-data:
+
+networks:
+  app-network:

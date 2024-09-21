@@ -1,6 +1,7 @@
 val kotlin_version: String by project
 val logback_version: String by project
 val koin_version = "3.5.6"
+val mongo = "4.10.1"
 
 plugins {
     kotlin("jvm") version "2.0.20"
@@ -23,8 +24,9 @@ repositories {
 }
 
 dependencies {
+    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:$mongo")
+    implementation("org.mongodb:bson-kotlin:$mongo")
     implementation("io.ktor:ktor-server-swagger")
-
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
@@ -35,5 +37,4 @@ dependencies {
     implementation ("io.insert-koin:koin-ktor:$koin_version")
     implementation("io.ktor:ktor-server-status-pages")
     implementation ("io.insert-koin:koin-logger-slf4j:$koin_version")
-
 }
