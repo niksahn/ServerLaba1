@@ -1,42 +1,45 @@
 package com.brigada.laba1.data.repository
 
 
-import com.brigada.laba1.data.entities.Film
-import org.bson.Document
-import com.mongodb.ConnectionString
-import com.mongodb.MongoClientSettings
-import com.mongodb.ServerApi
-import com.mongodb.ServerApiVersion
-import com.mongodb.client.model.Filters
+import com.brigada.laba1.data.entities.FilmMongo
+import com.brigada.laba1.domain.Film
+import com.brigada.laba1.domain.toDomain
+import com.brigada.laba1.domain.toMongo
 import com.mongodb.client.model.Filters.eq
 import com.mongodb.client.model.Updates
-import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.toList
-import org.bson.BsonDocument
+import org.bson.types.ObjectId
 
 class DataRepositoryMongo(database: MongoDatabase) : DataRepository {
 
-    private val films = database.getCollection<Film>(collectionName = "films")
-    override suspend fun getFilms(): List<Film> = films.find().toList()
+    private val films = database.getCollection<FilmMongo>(collectionName = "films")
+    override suspend fun getFilms(): List<Film> = films.find().limit(100).toList().map { it.toDomain() }
 
-    override suspend fun getFilm(id: Long): Film? = films.find(eq("id", id)).limit(1).toList().firstOrNull()
+    override suspend fun getFilm(id: String): Film? =
+        films.find(eq("_id", ObjectId(id))).limit(1).toList().firstOrNull()?.toDomain()
 
     override suspend fun changeFilm(newFilmData: Film): Boolean {
         val updateParams = Updates.combine(
-            Updates.set(Film::genre.name, newFilmData.genre),
-            Updates.set(Film::description.name, newFilmData.description),
-            Updates.set(Film::name.name, newFilmData.name),
-            Updates.set(Film::link.name, newFilmData.link),
+            Updates.set(FilmMongo::genre.name, newFilmData.genre),
+            Updates.set(FilmMongo::description.name, newFilmData.description),
+            Updates.set(FilmMongo::name.name, newFilmData.name),
+            Updates.set(FilmMongo::link.name, newFilmData.link),
         )
-        return films.updateOne(eq("id", newFilmData.id), updateParams).wasAcknowledged()
+        return try {
+            films.updateOne(eq("_id", ObjectId(newFilmData.id)), updateParams).wasAcknowledged()
+        } catch (e: Exception) {
+            false
+        }
     }
 
     override suspend fun addFilm(newFilmData: Film) {
-        films.insertOne(newFilmData)
+        films.insertOne(newFilmData.toMongo())
     }
 
-    override suspend fun deleteFIlm(id: Long): Boolean = films.deleteOne(eq("id", id)).wasAcknowledged()
+    override suspend fun deleteFIlm(id: String): Boolean {
+        if (films.find(eq("_id", ObjectId(id))).toList().isEmpty()) return false
+        return films.deleteOne(eq("_id", ObjectId(id))).wasAcknowledged()
+    }
 }

@@ -1,6 +1,6 @@
 package com.brigada.laba1.routing.models
 
-import com.brigada.laba1.data.entities.Film
+import com.brigada.laba1.domain.Film
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -11,4 +11,4 @@ data class AddingFIlm(
     val link: String
 )
 
-fun AddingFIlm.toData(id: Long) = Film(id, genres.filterValues { it == genre }.keys.first(), description, name, link)
+fun AddingFIlm.toData() = Film("", genres.filterValues { it == genre }.keys.first(), description, name, link)

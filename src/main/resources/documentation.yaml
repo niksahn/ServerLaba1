@@ -25,7 +25,7 @@ paths:
           name: id
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '200':
           description: Details of a film
@@ -43,10 +43,25 @@ paths:
           name: id
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '200':
           description: Film deleted successfully
+        '400':
+          description: Bad request
+
+  /test/{number}:
+    post:
+      summary: Добавляет указ число рандомных записей
+      parameters:
+        - in: path
+          name: number
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Film updated successfully
         '400':
           description: Bad request
 
@@ -64,7 +79,6 @@ paths:
           description: Film updated successfully
         '400':
           description: Bad request
-
   /film/add:
     post:
       summary: Add a new film
@@ -86,7 +100,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
         title:
           type: string
         director:

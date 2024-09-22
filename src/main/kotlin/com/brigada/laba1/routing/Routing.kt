@@ -22,7 +22,6 @@ fun Application.configureRouting() {
 
         get("/film/{id}") {
             call.pathParameters["id"]
-                ?.toLongOrNull()
                 ?.let { controller.getById(it) }
                 ?.toResponse()
                 ?.let { call.respond(HttpStatusCode.OK, it) }
@@ -32,9 +31,7 @@ fun Application.configureRouting() {
         post("/film/update") {
             call.receive<FilmResponse>()
                 .let { controller.update(it) }
-                .let {
-                    if (it) call.respond(HttpStatusCode.OK) else call.respond(HttpStatusCode.BadRequest)
-                }
+                .let { if (it) call.respond(HttpStatusCode.OK) else call.respond(HttpStatusCode.BadRequest) }
         }
 
         post("/film/add") {
@@ -49,11 +46,16 @@ fun Application.configureRouting() {
 
         delete("/film/{id}") {
             call.pathParameters["id"]
-                ?.toLongOrNull()
                 ?.let { controller.deleteFilm(it) }
-                ?.let {
-                    if (it) call.respond(HttpStatusCode.OK) else call.respond(HttpStatusCode.BadRequest)
-                }
+                ?.let { if (it) call.respond(HttpStatusCode.OK) else call.respond(HttpStatusCode.BadRequest) }
+        }
+
+        post("/test/{number}") {
+            call.pathParameters["number"]
+                ?.toIntOrNull()
+                ?.let { controller.test(it) }
+                ?.let { call.respond(HttpStatusCode.OK) }
+                ?: call.respond(HttpStatusCode.BadRequest)
         }
     }
 }

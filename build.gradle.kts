@@ -1,7 +1,7 @@
 val kotlin_version: String by project
 val logback_version: String by project
 val koin_version = "3.5.6"
-val mongo = "4.10.1"
+val mongo = "5.1.4"
 
 plugins {
     kotlin("jvm") version "2.0.20"
