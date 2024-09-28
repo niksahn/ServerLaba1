@@ -12,10 +12,8 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Application.configureRouting() {
-    val controller by inject<DataController>()
-
+    val controller: DataController by inject<DataController>()
     routing {
-
         get("/films") {
             call.respond(HttpStatusCode.OK, controller.getAllData())
         }
@@ -23,7 +21,6 @@ fun Application.configureRouting() {
         get("/film/{id}") {
             call.pathParameters["id"]
                 ?.let { controller.getById(it) }
-                ?.toResponse()
                 ?.let { call.respond(HttpStatusCode.OK, it) }
                 ?: call.respond(HttpStatusCode.BadRequest)
         }
@@ -56,6 +53,28 @@ fun Application.configureRouting() {
                 ?.let { controller.test(it) }
                 ?.let { call.respond(HttpStatusCode.OK) }
                 ?: call.respond(HttpStatusCode.BadRequest)
+        }
+
+        get("/films/random") {
+            call.request.queryParameters["size"]
+                ?.toIntOrNull()
+                ?.let { size ->
+                    call.request.queryParameters["genre"]
+                        ?.let {
+                            it.let { controller.getRandom(it, size) }
+                                ?.let { call.respond(HttpStatusCode.OK, it) }
+                                ?: call.respond(HttpStatusCode.NotFound)
+                        }
+                }
+                ?: call.respond(HttpStatusCode.BadRequest)
+        }
+
+        delete("/films") {
+            if (controller.deleteAll()) call.respond(HttpStatusCode.OK) else call.respond(HttpStatusCode.InternalServerError)
+        }
+
+        get("/films/count") {
+            call.respond(HttpStatusCode.OK, controller.count())
         }
     }
 }

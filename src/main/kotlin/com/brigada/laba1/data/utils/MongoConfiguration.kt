@@ -13,16 +13,14 @@ fun configurateClient(): MongoClient {
 
     val mongoClientSettings = MongoClientSettings.builder()
         .applyConnectionString(ConnectionString(connectionString))
-        .applyToClusterSettings {
-            it.serverSelectionTimeout(1000, TimeUnit.MINUTES)
-        }
+        .applyToClusterSettings { it.serverSelectionTimeout(1000, TimeUnit.MINUTES) }
         .build()
 
     return MongoClient.create(mongoClientSettings)
 }
 
-fun configureMongoDB(client: MongoClient): MongoDatabase {
-    val database = client.getDatabase("laba")
+fun configureMongoDB(client: MongoClient, dataBase: String = "laba"): MongoDatabase {
+    val database = client.getDatabase(dataBase)
     runBlocking { println(database.runCommand(Document("ping", 1))) }
     return database
 }

@@ -22,14 +22,18 @@ class DataRepositoryCollectionImpl : DataRepository {
 
     override suspend fun getFilm(id: String): Film? = films.firstOrNull { it.id == id }
 
-   override suspend fun changeFilm(newFilmData: Film): Boolean {
+    override suspend fun changeFilm(newFilmData: Film): Boolean {
         if (!films.any { it.id == newFilmData.id }) return false
         films.replaceAll { if (it.id == newFilmData.id) newFilmData else it }
         return true
     }
 
     override suspend fun addFilm(newFilmData: Film) {
-        films.add(newFilmData.copy(id = films.last().id + 1))
+        films.add(newFilmData.copy(id = (films.lastIndex + 1).toString()))
+    }
+
+    override suspend fun addFilm(newFilmData: List<Film>) {
+        films.addAll(newFilmData)
     }
 
     override suspend fun deleteFIlm(id: String): Boolean {
@@ -37,4 +41,15 @@ class DataRepositoryCollectionImpl : DataRepository {
         films.removeAll { it.id == id }
         return true
     }
+
+    override suspend fun getRandom(genre: Genre, size: Int): List<Film> {
+        return listOf()
+    }
+
+    override suspend fun clear(): Boolean {
+        films.clear()
+        return true
+    }
+
+    override suspend fun count(): Long = films.count().toLong()
 }

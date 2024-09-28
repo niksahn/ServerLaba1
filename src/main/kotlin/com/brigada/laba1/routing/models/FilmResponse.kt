@@ -16,7 +16,9 @@ data class FilmResponse(
 fun Film.toResponse() = FilmResponse(id, genre.mapToString(), description, name, link)
 fun FilmResponse.toData() = Film(id, genres.filterValues { it == genre }.keys.first(), description, name, link)
 
-private fun Genre.mapToString() = genres[this] ?: error("Can't find genre")
+fun String.toGenre() = genres.filterValues { it == this }.keys.firstOrNull()
+fun Genre.mapToString() = genres[this] ?: error("Can't find genre")
+
 
 internal val genres = mapOf(
     Genre.HORROR to "Хоррор",

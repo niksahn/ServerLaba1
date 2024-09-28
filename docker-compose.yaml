@@ -1,6 +1,14 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
   app:
     build:
       context: .
@@ -8,14 +16,14 @@ services:
     ports:
       - "8080:8080"
     environment:
-      MONGO_URL: "mongodb://localhost:27017"
+      MONGO_URL: "mongodb://mongodb:27017"
     networks:
-        - app-network
+      - app-network
     depends_on:
-      - mongodb  # Это гарантирует, что MongoDB запускается перед приложением
+      - mongodb
 
   mongodb:
-    image: 983d82181e761c763f08565874b3e3b02e1626f7cbf942e98852bad7e5721faa
+    image: mongo:latest
     ports:
       - "27017:27017"
     volumes:

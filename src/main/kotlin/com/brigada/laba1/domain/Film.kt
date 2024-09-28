@@ -2,9 +2,11 @@ package com.brigada.laba1.domain
 
 import com.brigada.laba1.data.entities.FilmMongo
 import com.brigada.laba1.data.entities.Genre
+import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 import kotlin.random.Random
 
+@Serializable
 data class Film(
     val id: String,
     val genre: Genre,
