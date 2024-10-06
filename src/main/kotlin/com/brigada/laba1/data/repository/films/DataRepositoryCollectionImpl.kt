@@ -1,9 +1,9 @@
-package com.brigada.laba1.data.repository
+package com.brigada.laba1.data.repository.films
 
 import com.brigada.laba1.data.entities.Genre
 import com.brigada.laba1.domain.Film
 
-class DataRepositoryCollectionImpl : DataRepository {
+class DataRepositoryCollectionImpl : FilmsDataRepository {
     private val films = mutableListOf(
         Film(
             id = "0",
@@ -19,6 +19,7 @@ class DataRepositoryCollectionImpl : DataRepository {
     )
 
     override suspend fun getFilms(): List<Film> = films
+    override suspend fun getFilms(id: List<String>): List<Film> = films.filter { id.contains(it.id) }
 
     override suspend fun getFilm(id: String): Film? = films.firstOrNull { it.id == id }
 
@@ -28,9 +29,8 @@ class DataRepositoryCollectionImpl : DataRepository {
         return true
     }
 
-    override suspend fun addFilm(newFilmData: Film) {
-        films.add(newFilmData.copy(id = (films.lastIndex + 1).toString()))
-    }
+    override suspend fun addFilm(newFilmData: Film) =
+        films.add(newFilmData.copy(id = (films.lastIndex + 1).toString())).let { (films.lastIndex + 1).toString() }
 
     override suspend fun addFilm(newFilmData: List<Film>) {
         films.addAll(newFilmData)
@@ -42,7 +42,7 @@ class DataRepositoryCollectionImpl : DataRepository {
         return true
     }
 
-    override suspend fun getRandom(genre: Genre, size: Int): List<Film> {
+    override suspend fun getRandom(genre: Genre?, size: Int): List<Film> {
         return listOf()
     }
 
@@ -52,4 +52,6 @@ class DataRepositoryCollectionImpl : DataRepository {
     }
 
     override suspend fun count(): Long = films.count().toLong()
+    override suspend fun exist(ids: List<String>): List<String> = films.filter { ids.contains(it.id) }.map { it.id }
+
 }

@@ -1,4 +1,4 @@
-package com.brigada.laba1.data.repository
+package com.brigada.laba1.data.repository.films
 
 
 import com.brigada.laba1.data.entities.FilmMongo
@@ -8,23 +8,21 @@ import com.brigada.laba1.domain.toDomain
 import com.brigada.laba1.domain.toMongo
 import com.mongodb.client.model.Aggregates.limit
 import com.mongodb.client.model.Aggregates.match
-import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Filters.*
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.toList
 import org.bson.BsonDocument
 import org.bson.BsonInt32
-import org.bson.BsonValue
 import org.bson.Document
-import org.bson.conversions.Bson
 import org.bson.types.ObjectId
 
-class DataRepositoryMongo(database: MongoDatabase) : DataRepository {
+class DataRepositoryMongo(database: MongoDatabase) : FilmsDataRepository {
 
     private val films = database.getCollection<FilmMongo>(collectionName = "films")
     override suspend fun getFilms(): List<Film> = films.find().limit(100).toList().map { it.toDomain() }
+    override suspend fun getFilms(id: List<String>): List<Film> =
+        films.find(`in`("_id", id.map { ObjectId(it) })).toList().map { it.toDomain() }
 
     override suspend fun getFilm(id: String): Film? =
         films.find(eq("_id", ObjectId(id))).limit(1).toList().firstOrNull()?.toDomain()
@@ -43,9 +41,9 @@ class DataRepositoryMongo(database: MongoDatabase) : DataRepository {
         }
     }
 
-    override suspend fun addFilm(newFilmData: Film) {
-        films.insertOne(newFilmData.toMongo())
-    }
+    override suspend fun addFilm(newFilmData: Film) =
+        films.insertOne(newFilmData.toMongo()).insertedId?.asObjectId()?.value?.toHexString()
+
 
     override suspend fun addFilm(newFilmData: List<Film>) {
         films.insertMany(newFilmData.map { it.toMongo() })
@@ -56,10 +54,10 @@ class DataRepositoryMongo(database: MongoDatabase) : DataRepository {
         return films.deleteOne(eq("_id", ObjectId(id))).wasAcknowledged()
     }
 
-    override suspend fun getRandom(genre: Genre, size: Int): List<Film> {
+    override suspend fun getRandom(genre: Genre?, size: Int): List<Film> {
         return films.aggregate(
-            listOf(
-                match(eq(FilmMongo::genre.name, genre.toString())),
+            listOfNotNull(
+                genre?.let { match(eq(FilmMongo::genre.name, genre.toString())) },
                 BsonDocument("\$sample", BsonDocument("size", BsonInt32(size))),
                 limit(500)
             )
@@ -73,4 +71,6 @@ class DataRepositoryMongo(database: MongoDatabase) : DataRepository {
     }
 
     override suspend fun count(): Long = films.countDocuments()
+    override suspend fun exist(ids: List<String>): List<String> =
+        films.find(`in`("_id", ids.map { ObjectId(it) })).toList().map { it.id.toHexString() }
 }
