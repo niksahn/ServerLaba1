@@ -12,6 +12,7 @@ import com.brigada.laba1.data.repository.users.UserRepositoryMongo
 import com.brigada.laba1.data.utils.configurateClient
 import com.brigada.laba1.data.utils.configureMongoDB
 import com.brigada.laba1.domain.DataController
+import com.brigada.laba1.domain.RecommendationController
 import com.brigada.laba1.domain.UserController
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import org.koin.dsl.module
@@ -28,6 +29,14 @@ object DataModule {
         single<UserDataRepository>(createdAtStart = true) { UserRepositoryMongo(get()) }
         single<UserController>(createdAtStart = true) { UserController(get(), get()) }
         single<PrologMessaging>(createdAtStart = true) { PrologMessaging(RedisMessageClient()) }
-        single<DataController>(createdAtStart = true) { DataController(get(), get(), get(), KtorNetworkClient()) }
+        single<RecommendationController>(createdAtStart = true) {
+            RecommendationController(
+                get(),
+                get(),
+                get(),
+                KtorNetworkClient()
+            )
+        }
+        single<DataController>(createdAtStart = true) { DataController(get()) }
     }
 }

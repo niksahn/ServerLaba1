@@ -1,6 +1,7 @@
 package com.brigada.laba1.routing
 
 import com.brigada.laba1.domain.DataController
+import com.brigada.laba1.domain.RecommendationController
 import com.brigada.laba1.domain.UserController
 import com.brigada.laba1.routing.models.*
 import io.ktor.http.*
@@ -76,7 +77,12 @@ fun Application.configureRouting() {
         get("/films/count") {
             call.respond(HttpStatusCode.OK, controller.count())
         }
+    }
+}
 
+fun Application.configureRecommendationRouting(){
+    val controller: RecommendationController by inject<RecommendationController>()
+    routing {
         get("/recommendations/{user}") {
             call.pathParameters["user"]
                 ?.let { controller.getPrologRecommendation(it) }

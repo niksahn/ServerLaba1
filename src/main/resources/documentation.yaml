@@ -61,6 +61,21 @@ paths:
         '400':
           description: Неверный запрос
 
+  /test/{number}:
+    post:
+      summary: Добавить фильмы
+      parameters:
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Фильм добавлен
+        '400':
+          description: Неверный запрос
+
   /film/update:
     post:
       summary: Обновить информацию о фильме

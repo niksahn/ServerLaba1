@@ -12,13 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 
-class DataController(
-    private val dataRepository: FilmsDataRepository,
-    private val userRepository: UserDataRepository,
-
-    private val prologMessaging: PrologMessaging,
-    private val ktorClient: KtorNetworkClient
-) {
+class DataController(private val dataRepository: FilmsDataRepository) {
     suspend fun getAllData() = dataRepository.getFilms().map { it.toResponse() }
     suspend fun addFilm(film: AddingFIlm) = dataRepository.addFilm(film.toData())
     suspend fun deleteFilm(id: String): Boolean = dataRepository.deleteFIlm(id)
@@ -30,6 +24,16 @@ class DataController(
     suspend fun getRandom(genre: String, size: Int) =
         genre.toGenre()?.let { dataRepository.getRandom(it, size) }?.map { it.toResponse() }
 
+    suspend fun deleteAll() = dataRepository.clear()
+    suspend fun count() = dataRepository.count()
+}
+
+class RecommendationController(
+    private val dataRepository: FilmsDataRepository,
+    private val userRepository: UserDataRepository,
+    private val prologMessaging: PrologMessaging,
+    private val ktorClient: KtorNetworkClient
+) {
     suspend fun getPrologRecommendations() =
         prologMessaging
             .getLastMessage()
@@ -66,9 +70,6 @@ class DataController(
         )
         return ktorClient.addPrologRecommendationData(prequest)
     }
-
-    suspend fun deleteAll() = dataRepository.clear()
-    suspend fun count() = dataRepository.count()
 }
 
 class UserController(
