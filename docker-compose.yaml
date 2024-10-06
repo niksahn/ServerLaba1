@@ -31,6 +31,21 @@ services:
     networks:
       - app-network
 
+  prolog-server:
+    build:
+      context: ../prolog
+      dockerfile: Dockerfile
+    container_name: prolog-server
+    ports:
+      - "8090:8090"
+    networks:
+      - app-network
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: "redis"
+      REDIS_PORT: 6379
+
 volumes:
   mongo-data:
 

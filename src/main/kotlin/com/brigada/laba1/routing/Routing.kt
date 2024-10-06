@@ -1,9 +1,8 @@
 package com.brigada.laba1.routing
 
 import com.brigada.laba1.domain.DataController
-import com.brigada.laba1.routing.models.AddingFIlm
-import com.brigada.laba1.routing.models.FilmResponse
-import com.brigada.laba1.routing.models.toResponse
+import com.brigada.laba1.domain.UserController
+import com.brigada.laba1.routing.models.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -35,7 +34,8 @@ fun Application.configureRouting() {
             try {
                 call.receive<AddingFIlm>()
                     .let { controller.addFilm(it) }
-                    .let { call.respond(HttpStatusCode.OK) }
+                    ?.let { call.respond(HttpStatusCode.OK, it) }
+                    ?: call.respond(HttpStatusCode.BadRequest)
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.BadRequest)
             }
@@ -75,6 +75,56 @@ fun Application.configureRouting() {
 
         get("/films/count") {
             call.respond(HttpStatusCode.OK, controller.count())
+        }
+
+        get("/recommendations/{user}") {
+            call.pathParameters["user"]
+                ?.let { controller.getPrologRecommendation(it) }
+                ?.let { call.respond(HttpStatusCode.OK, it) }
+                ?: call.respond(HttpStatusCode.BadRequest)
+        }
+
+        get("/recommendations") {
+            controller.getPrologRecommendations()
+                .let { call.respond(HttpStatusCode.OK, it) }
+        }
+
+        post("/recommendations/addRequest") {
+            try {
+                call.receive<RecommendationsRequest>()
+                    .let { controller.postProlog(it) }
+                    .let { call.respond(it) }
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest)
+            }
+        }
+    }
+}
+
+fun Application.configureUserRouting() {
+    val controller: UserController by inject<UserController>()
+    routing {
+        post("user") {
+            try {
+                call.receive<UserRequest>()
+                    .let { controller.addUser(it) }
+                    ?.let { call.respond(HttpStatusCode.OK, it) }
+                    ?: call.respond(HttpStatusCode.BadRequest)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest)
+            }
+        }
+
+        post("user/films") {
+            try {
+                call.receive<UpdateUserRequest>()
+                    .let { controller.watchedFilm(it.watchedFilms, it.id) }
+                    .takeIf { it }
+                    ?.let { call.respond(HttpStatusCode.OK, it) }
+                    ?: call.respond(HttpStatusCode.NotFound)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest)
+            }
         }
     }
 }

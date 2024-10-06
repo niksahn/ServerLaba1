@@ -1,81 +1,69 @@
-openapi: 3.0.1
+openapi: 3.0.0
 info:
-  title: Ktor Film API
-  description: API for managing films
+  title: Online Cinema API
   version: 1.0.0
+  description: API для онлайн-кинотеатра с управлением фильмами, пользователями и рекомендациями.
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер
+
 paths:
   /films:
-    get:
-      summary: Retrieve all films
+    delete:
+      summary: Удалить все фильмы
       responses:
         '200':
-          description: A list of films
+          description: Все фильмы удалены
+        '500':
+          description: Ошибка сервера
+    get:
+      summary: Получить все фильмы
+      responses:
+        '200':
+          description: Список всех фильмов
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Film'
-    delete:
-      summary: Delete all films
-      description: Deletes all films from the database.
-      responses:
-        '200':
-          description: Successfully deleted all films
-        '500':
-          description: Internal server error while attempting to delete films
+                  $ref: '#/components/schemas/FilmResponse'
 
   /film/{id}:
     get:
-      summary: Get a film by ID
+      summary: Получить фильм по ID
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Details of a film
+          description: Фильм найден
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Film'
+                $ref: '#/components/schemas/FilmResponse'
         '400':
-          description: Bad request
+          description: Неверный запрос
 
     delete:
-      summary: Delete a film by ID
+      summary: Удалить фильм по ID
       parameters:
-        - in: path
-          name: id
+        - name: id
+          in: path
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Film deleted successfully
+          description: Фильм удален
         '400':
-          description: Bad request
-
-  /test/{number}:
-    post:
-      summary: Добавляет указ число рандомных записей
-      parameters:
-        - in: path
-          name: number
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Film updated successfully
-        '400':
-          description: Bad request
+          description: Неверный запрос
 
   /film/update:
     post:
-      summary: Update a film
+      summary: Обновить информацию о фильме
       requestBody:
         required: true
         content:
@@ -84,107 +72,207 @@ paths:
               $ref: '#/components/schemas/FilmResponse'
       responses:
         '200':
-          description: Film updated successfully
+          description: Фильм обновлен
         '400':
-          description: Bad request
+          description: Ошибка обновления
+
   /film/add:
     post:
-      summary: Add a new film
+      summary: Добавить новый фильм
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddingFilm'
+              $ref: '#/components/schemas/AddingFIlm'
       responses:
         '200':
-          description: Film added successfully
+          description: Фильм добавлен
         '400':
-          description: Bad request
+          description: Ошибка добавления
 
   /films/random:
     get:
-      summary: Get random films
-      description: Retrieve a list of random films filtered by genre.
+      summary: Получить случайные фильмы
       parameters:
         - name: size
           in: query
-          required: true
           schema:
             type: integer
-            description: Number of random films to retrieve
-          description: The number of random films to retrieve.
+          description: Количество фильмов
         - name: genre
           in: query
-          required: true
           schema:
             type: string
-          description: The genre to filter the random films by.
+          description: Жанр фильмов
       responses:
         '200':
-          description: A list of random films
+          description: Случайные фильмы
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                      description: The ID of the film
-                    title:
-                      type: string
-                      description: The title of the film
-                    genre:
-                      type: string
-                      description: The genre of the film
+                  $ref: '#/components/schemas/FilmResponse'
         '400':
-          description: Bad request due to missing or invalid size parameter
-        '404':
-          description: No films found for the specified genre
+          description: Неверный запрос
 
+  /films/count:
+    get:
+      summary: Получить количество фильмов
+      responses:
+        '200':
+          description: Количество фильмов
+
+  /recommendations/{user}:
+    get:
+      summary: Получить рекомендации для пользователя
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Рекомендации для пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationsResponse'
+        '400':
+          description: Неверный запрос
+
+  /recommendations:
+    get:
+      summary: Получить общие рекомендации
+      responses:
+        '200':
+          description: Общие рекомендации
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecommendationsResponse'
+
+  /recommendations/addRequest:
+    post:
+      summary: Добавить запрос для получения рекомендаций
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecommendationsRequest'
+      responses:
+        '200':
+          description: Запрос обработан
+        '400':
+          description: Неверный запрос
+
+  /user:
+    post:
+      summary: Добавить нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          description: Пользователь добавлен
+        '400':
+          description: Ошибка добавления пользователя
+
+  /user/films:
+    post:
+      summary: Обновить просмотренные фильмы пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Информация обновлена
+        '400':
+          description: Неверный запрос
 
 components:
   schemas:
-    Film:
+    UserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        watchedFilms:
+          type: array
+          items:
+            type: string
+
+    UpdateUserRequest:
       type: object
       properties:
         id:
           type: string
-        title:
+        watchedFilms:
+          type: array
+          items:
+            type: string
+
+    AddingFIlm:
+      type: object
+      properties:
+        genre:
           type: string
-        director:
+        description:
           type: string
-        releaseYear:
-          type: integer
-      required:
-        - id
-        - title
+        name:
+          type: string
+        link:
+          type: string
 
     FilmResponse:
       type: object
       properties:
         id:
-          type: integer
-        title:
           type: string
-        director:
+        genre:
           type: string
-        releaseYear:
-          type: integer
-      required:
-        - id
-        - title
+        description:
+          type: string
+        name:
+          type: string
+        link:
+          type: string
 
-    AddingFilm:
+    RecommendationsRequest:
       type: object
       properties:
-        title:
-          type: string
-        director:
-          type: string
-        releaseYear:
+        users:
+          type: array
+          items:
+            type: string
+        selectedFilmsCount:
           type: integer
-      required:
-        - title
+
+    RecommendationsResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserResponse'
+        films:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilmResponse'
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string

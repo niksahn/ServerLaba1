@@ -2,25 +2,30 @@ package com.brigada.laba1
 
 import com.brigada.laba1.TestDataModule.testModule
 import com.brigada.laba1.data.caching.InMemoryClient
-import com.brigada.laba1.data.repository.CachedRepository
-import com.brigada.laba1.data.repository.DataRepository
-import com.brigada.laba1.data.repository.DataRepositoryMongo
+import com.brigada.laba1.data.repository.films.CachedRepository
+import com.brigada.laba1.data.repository.films.FilmsDataRepository
+import com.brigada.laba1.data.repository.films.DataRepositoryMongo
 import com.brigada.laba1.data.utils.configurateClient
 import com.brigada.laba1.data.utils.configureMongoDB
 import com.brigada.laba1.domain.DataController
 import com.brigada.laba1.plugins.configureHTTP
 import com.brigada.laba1.plugins.configureSerialization
 import com.brigada.laba1.routing.configureRouting
+import com.brigada.laba1.routing.models.FilmResponse
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.testing.*
+import kotlinx.datetime.Clock
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.DurationUnit
 
 class RoutingTest {
     @Test
@@ -56,11 +61,26 @@ class RoutingTest {
         val end = client.get("/films/count").body<Int>()
         assertEquals(end, 0)
     }
+
+    @Test
+    fun checkCach() = testApplication {
+        application { testModule() }
+        val films = client.get("/films").apply { assertEquals(HttpStatusCode.OK, status) }.body<String>()
+        val id = Json.decodeFromString(ListSerializer(FilmResponse.serializer()), films).first().id
+        var startTime = Clock.System.now()
+        var start = client.get("/films")
+        var endTime = Clock.System.now()
+        println("In database " +(endTime - startTime).toLong(DurationUnit.MILLISECONDS))
+        startTime = Clock.System.now()
+        start = client.get("/films")
+        endTime = Clock.System.now()
+        println("In Cach " +(endTime - startTime).toLong(DurationUnit.MILLISECONDS))
+    }
 }
 
 object TestDataModule {
     private val data = module {
-        single<DataRepository>(createdAtStart = true) {
+        single<FilmsDataRepository>(createdAtStart = true) {
             CachedRepository(
                 repository = DataRepositoryMongo(configureMongoDB(configurateClient(), "Test")),
                 redisClient = InMemoryClient()
